@@ -34,11 +34,13 @@
   (apply #'append (mapcar #'describe-obj (objects-at loc objs obj-loc)))))
 
 (defun look ()
+  "Will describe the objects, locations and paths to and from a given area. Usage: 'look'"
   (append (describe-location *location* *nodes*)
           (describe-paths *location* *edges*)
           (describe-objects *location* *objects* *object-locations*)))
 
 (defun walk (direction)
+  "Used to navigate around the game world. Usage: 'walk east'"
   (let ((next (find direction
                     (cdr (assoc *location* *edges*))
                     :key #'cadr)))
@@ -48,6 +50,7 @@
     '(you cant go that way))))
 
 (defun pickup (object)
+  "Used to pick up objects in a room and add them to you inventory. Usage: 'pickup tomato'"
   (cond ((member object
                  (objects-at *location* *objects* *object-locations*))
           (push (list object 'body) *object-locations*)
@@ -55,8 +58,15 @@
           (t '(you cant get that.))))
 
 (defun inventory ()
+  "Used to check your inventory. Usage: 'inventory'"
   (cons 'items- (objects-at 'body *objects* *object-locations*)))
 
+(defun print-docs (func)
+  (prin1-to-string (documentation func 'function)))
+
+(defun list-commands () 
+  "Prints all of the game commands for reference. Usage: 'list-commands'"
+  (game-print (mapcar #'print-docs *allowed-commands*)))
 (defun game-read ()
   (let ((cmd (read-from-string
                 (concatenate 'string "(" (read-line) ")"))))
@@ -64,7 +74,7 @@
             (list 'quote x)))
     (cons (car cmd) (mapcar #'quote-it (cdr cmd))))))
 
-(defparameter *allowed-commands* '(look walk pickup inventory))
+(defparameter *allowed-commands* '(look walk pickup inventory list-commands))
 
 (defun game-eval (sexp)
   (if (member (car sexp) *allowed-commands*)
@@ -98,4 +108,5 @@
       (game-repl))))
 
 (game-print '(Welcome to the wizard\'s adventure\!))
+(game-print '(Enter list-commands to see a list of commands you can use))
 (game-repl)
